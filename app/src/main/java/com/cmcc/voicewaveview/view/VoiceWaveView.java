@@ -5,43 +5,49 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-
-
-import com.cmcc.voicewaveview.recorder.VoiceRecorder;
+import android.view.View;
 
 import java.util.LinkedList;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
 //语音波形视图
-public class VoiceWaveView extends  SurfaceView implements SurfaceHolder.Callback {
+public class VoiceWaveView extends View {
+
+    private final static int MODE_RECORDING = 0;
+    private final static int MODE_PLAYING = 1;
+
+    private long duration = 0;
+    private long playSleepTime = 0;
+
+    private int current_position = 1;
+    private int maxLines = 0;
+    private int mode = -1;
+
+    private boolean record_flag = false;  //整体运行标识
+    private boolean play_flag = false;  //整体运行标识
+    private boolean isRecordPause = false;  //停止画图线程标识
+    private boolean isPlayPause = false;   //是否需要重绘标识
+
     private final String COLOR_BACKGROUND = "#7f7f7f";
     private final String COLOR_LINE = "#ffffff";
     private final String COLOR_LINE_UNPLAYED = "#99ffffff";
+
     private final float X_DIVIDER_WIDTH = 8; //线条间隔
     private final float LINE_WIDTH = 3; //线宽
     private final int MAX_TIME = 60; //最大录音时间
 
     private Context context;
-    private SurfaceHolder sfh;
     private VoiceDrawTask voiceDrawTask;
-    private VoicePlayDrawTask voiceplayDrawTask;
-    private Canvas canvas;
+    private VoicePlayDrawTask voicePlayDrawTask;
     private Paint paint;
     private Timer timer;
-    private boolean flag = false;  //整体运行标识
-    private boolean isStopDraw = false;  //停止画图线程标识
-    private boolean isReDraw = false;   //是否需要重绘标识
+    private Random random = new Random();
 
-
-    private int maxLines;
     private LinkedList<WaveBean> linkedList;
     private LinkedList<WaveBean> allLinkedList;
     private LinkedList<WaveBean> compressLinkedList;
-
-    private long playSleepTime = 0;
 
     public VoiceWaveView(Context context) {
         this(context, null);
@@ -56,8 +62,6 @@ public class VoiceWaveView extends  SurfaceView implements SurfaceHolder.Callbac
         // TODO Auto-generated constructor stub
         super(context, attrs, defStyleAttr);
         this.context = context;
-        this.sfh = this.getHolder();
-        this.sfh.addCallback(this);
         timer = new Timer();
         paint = new Paint();
         paint.setFakeBoldText(true);  //设置粗体
@@ -67,92 +71,57 @@ public class VoiceWaveView extends  SurfaceView implements SurfaceHolder.Callbac
         linkedList = new LinkedList<WaveBean>();
     }
 
-    public void start() {
-        clearCanvas();  //清屏
-        isStopDraw = false;
-        maxLines = (int) ((getWidth()-10) / (X_DIVIDER_WIDTH)) - 2;  //根据控件宽度计算可以容纳单个波纹的最大个数
-        voiceDrawTask = new VoiceDrawTask();  //波纹画图线程初始化
-        timer.schedule(voiceDrawTask, 200);   //延迟200ms执行
-    }
-
-    public void stop() {
-        voiceDrawTask.cancel();  //停止画图线程
-        clearCanvas();  //清屏
-        allLinkedList.removeAll(allLinkedList);
-        linkedList.removeAll(linkedList);
-    }
-
-    //启动语音播放波纹，必须在在stopDraw后或者达到最长录音时间后调用
-    public void startPlayVoice(int voice_duration) {
-        clearCanvas(); //清屏
-        playSleepTime = (voice_duration*1000)/compressLinkedList.size();  //根据语音时长计算单个波纹间隔
-        voiceplayDrawTask = new VoicePlayDrawTask();  //语音播放画图线程初始化
-        timer.schedule(voiceplayDrawTask, 200);  //延迟200ms执行
-    }
-
-    public void stopPlayVoice() {
-        if(voiceplayDrawTask != null) {
-            voiceplayDrawTask.cancel();
-            clearCanvas();
-        }
-    }
-
-    public void reDrawCompressWave() {  //重画压缩波形
-        isReDraw = true;
-    }
-
-    public void stopDraw() {  //停止录音，画出压缩后的波形
-        isStopDraw = true;
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        maxLines = (int) ((getWidth()-10) / (X_DIVIDER_WIDTH));  //根据控件宽度计算可以容纳单个波纹的最大个数
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        if(isReDraw) { //重绘当前状态
-            try {
-                canvas = sfh.lockCanvas();//获得画布
-                drawBackground();
-                if(canvas != null) {
-                    drawWave(compressLinkedList);
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        drawBackground(canvas);
+        if(mode == MODE_RECORDING) {
+            paint.setColor(Color.WHITE);
+            //录制最大时间
+            if (duration/1000 == MAX_TIME || isRecordPause) {
+                //获得压缩后的波形并画出
+                compressLinkedList = getCompressLinkedList();
+                drawWave(canvas, compressLinkedList);
+                record_flag = false;
+            } else {
+                WaveBean wave = new WaveBean(random.nextInt(30));
+                //链表长度超过能显示的最大数
+                if (linkedList.size() > maxLines) {
+                    allLinkedList.add(linkedList.getFirst());
+                    linkedList.removeFirst(); //移除链表头
                 }
-                sfh.unlockCanvasAndPost(canvas);
-                isReDraw = false;
-            } catch (Exception e) {
-
+                linkedList.add(wave); //加入表尾
+                drawWave(canvas, linkedList);
+            }
+        } else if (mode == MODE_PLAYING) {
+            if(!isPlayPause) {
+                if (current_position == compressLinkedList.size()) {
+                    drawPlayWave(canvas, current_position);
+                    play_flag = false;
+                } else {
+                    drawPlayWave(canvas, current_position);
+                    current_position++;
+                }
+            } else {
+                drawPlayWave(canvas, current_position);
             }
         }
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        if(visibility != VISIBLE)
+            releaseAll();
     }
 
-    private void clearCanvas() {
-        try {
-            canvas = sfh.lockCanvas();//获得画布
-            if(canvas != null) {
-                drawBackground();
-            }
-            sfh.unlockCanvasAndPost(canvas);
-        } catch (Exception e) {
-
-        }
-    }
-
-    private void drawWave(LinkedList<WaveBean> linkedList) {
-        int i = linkedList.size();
-        for (WaveBean bean : linkedList) {
-            //从表头开始画
-            canvas.drawLine(bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF + bean.getYoffset(), paint);
-            i--;
-        }
-    }
-
-    private void drawPlayWave(int current_position) {
+    private void drawPlayWave(Canvas canvas, int current_position) {
         int i = compressLinkedList.size();
         for (WaveBean bean : compressLinkedList) {
             //从表头开始画
@@ -166,7 +135,7 @@ public class VoiceWaveView extends  SurfaceView implements SurfaceHolder.Callbac
     }
 
     //清屏画背景
-    private void drawBackground() {
+    private void drawBackground(Canvas canvas) {
         if(canvas != null)
             canvas.drawColor(Color.parseColor(COLOR_BACKGROUND));
     }
@@ -197,95 +166,120 @@ public class VoiceWaveView extends  SurfaceView implements SurfaceHolder.Callbac
         }
     }
 
+    public void startRecord() {
+        releaseAll();
+        mode = MODE_RECORDING;
+        isRecordPause = false;
+        duration = 0;
+        voiceDrawTask = new VoiceDrawTask();  //波纹画图线程初始化
+        timer.schedule(voiceDrawTask, 200);   //延迟200ms执行
+    }
+
+    public void pauseRecord() {
+        isRecordPause = true;
+    }
+
+    public void stopRecord() {
+        releaseAll();
+    }
+
+    //启动语音播放波纹，必须在stopRecord后或者达到最长录音时间后调用
+    public void startPlay() {
+        if(compressLinkedList != null) {
+            releaseThread();
+            mode = MODE_PLAYING;
+            isPlayPause = false;
+            current_position = 1;
+            playSleepTime = duration / compressLinkedList.size();  //根据语音时长计算单个波纹间隔
+            voicePlayDrawTask = new VoicePlayDrawTask();  //语音播放画图线程初始化
+            timer.schedule(voicePlayDrawTask, 200);  //延迟200ms执行
+        }
+    }
+
+    public void pausePlay() {
+        if (isPlayPause)
+            isPlayPause = false;
+        else
+            isPlayPause = true;
+    }
+
+    private void releaseAll() {
+        releaseThread();
+        if(allLinkedList != null) {
+            allLinkedList.clear();
+        }
+        if(linkedList != null) {
+            linkedList.clear();
+        }
+        if(compressLinkedList != null)
+            compressLinkedList.clear();
+
+    }
+
+    private void releaseThread() {
+        if(voiceDrawTask != null && record_flag)
+            voiceDrawTask.cancel();
+        if(voicePlayDrawTask != null && play_flag)
+            voicePlayDrawTask.cancel();
+    }
+
+    private void drawWave(Canvas canvas, LinkedList<WaveBean> linkedList) {
+        int i = linkedList.size();
+        for (WaveBean bean : linkedList) {
+            //从表头开始画
+            canvas.drawLine(bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF + bean.getYoffset(), paint);
+            i--;
+        }
+    }
+
     //绘制波形线程
     private class VoiceDrawTask extends TimerTask {
 
         public VoiceDrawTask() {
-            flag = true;
+            record_flag = true;
         }
 
         @Override
         public boolean cancel() {
-            flag = false;
+            record_flag = false;
             return true;
         }
 
         @Override
         public void run() {
-            paint.setColor(Color.parseColor(COLOR_LINE));
-            while(flag) {
-                canvas = sfh.lockCanvas();//获得画布
-                if(canvas != null) {
-                    drawBackground();
-                    //录制最大时间
-                    if(VoiceRecorder.getDefault().getVoiceDuration() == MAX_TIME || isStopDraw) {
-                        //获得压缩后的波形并画出
-                        compressLinkedList = getCompressLinkedList();
-                        drawWave(compressLinkedList);
-                        flag = false;
-                    } else {
-                        WaveBean wave = new WaveBean(VoiceRecorder.getDefault().getVoice_volume());
-                        //链表长度超过能显示的最大数
-                        if (linkedList.size() > maxLines) {
-                            allLinkedList.add(linkedList.getFirst());
-                            linkedList.removeFirst(); //移除链表头
-                        }
-                        linkedList.add(wave); //加入表尾
-                        drawWave(linkedList);
-                    }
-                    try {
-                        Thread.sleep(100);
-                    } catch (Exception ex) {
-
-                    }finally {
-                        try {
-                            sfh.unlockCanvasAndPost(canvas);
-                        } catch (Exception e2) {
-
-                        }
-                    }
+            while (record_flag) {
+                try {
+                    postInvalidate();
+                    Thread.sleep(100);
+                    duration += 100;
+                } catch (Exception ex) {
                 }
             }
         }
     }
 
-    //绘图播放波形线程
+    //    //绘图播放波形线程
     private class VoicePlayDrawTask extends TimerTask {
-        int current_position = 1;
 
         public VoicePlayDrawTask() {
-            flag = true;
+            play_flag = true;
         }
 
         @Override
         public boolean cancel() {
             // TODO Auto-generated method stub\
-            flag = false;
+            play_flag = false;
             return true;
         }
 
         @Override
         public void run() {
-            while(flag) {
-                canvas = sfh.lockCanvas();//获得画布
-                drawBackground();
+            while(play_flag) {
                 try {
-                    if(current_position == compressLinkedList.size()) {
-                        drawPlayWave(current_position);
-                        flag = false;
-                    } else {
-                        drawPlayWave(current_position);
-                        Thread.sleep(playSleepTime);
-                        current_position++;
-                    }
+                    postInvalidate();
+                    Thread.sleep(playSleepTime);
                 } catch (Exception ex) {
 
-                }finally {
-                    try {
-                        sfh.unlockCanvasAndPost(canvas);
-                    } catch (Exception e2) {
-
-                    }
                 }
             }
         }
