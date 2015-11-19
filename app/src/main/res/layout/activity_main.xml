@@ -20,6 +20,7 @@
         android:id="@+id/btn_main"
         android:layout_below="@id/wvw_main"
         android:layout_width="match_parent"
+        android:text="开始"
         android:layout_marginTop="5dp"
         android:layout_height="55dp" />
 
@@ -28,6 +29,7 @@
         android:layout_below="@id/btn_main"
         android:layout_width="match_parent"
         android:layout_marginTop="5dp"
+        android:text="停止"
         android:layout_height="55dp" />
 
     <Button
@@ -35,6 +37,7 @@
         android:layout_below="@id/btn_main2"
         android:layout_marginTop="5dp"
         android:layout_width="match_parent"
+        android:text="播放"
         android:layout_height="55dp" />
 
     <Button
@@ -42,12 +45,14 @@
         android:layout_below="@id/btn_main3"
         android:layout_width="match_parent"
         android:layout_marginTop="5dp"
+        android:text="暂停播放/恢复播放"
         android:layout_height="55dp" />
 
     <Button
         android:id="@+id/btn_main5"
         android:layout_below="@id/btn_main4"
         android:layout_width="match_parent"
+        android:text="可见/不可见"
         android:layout_marginTop="5dp"
         android:layout_height="55dp" />
 

@@ -121,6 +121,15 @@ public class VoiceWaveView extends View {
             releaseAll();
     }
 
+    private void drawWave(Canvas canvas, LinkedList<WaveBean> linkedList) {
+        int i = linkedList.size();
+        for (WaveBean bean : linkedList) {
+            //从表头开始画
+            canvas.drawLine(bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF + bean.getYoffset(), paint);
+            i--;
+        }
+    }
+
     private void drawPlayWave(Canvas canvas, int current_position) {
         int i = compressLinkedList.size();
         for (WaveBean bean : compressLinkedList) {
@@ -221,15 +230,6 @@ public class VoiceWaveView extends View {
             voiceDrawTask.cancel();
         if(voicePlayDrawTask != null && play_flag)
             voicePlayDrawTask.cancel();
-    }
-
-    private void drawWave(Canvas canvas, LinkedList<WaveBean> linkedList) {
-        int i = linkedList.size();
-        for (WaveBean bean : linkedList) {
-            //从表头开始画
-            canvas.drawLine(bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF + bean.getYoffset(), paint);
-            i--;
-        }
     }
 
     //绘制波形线程
