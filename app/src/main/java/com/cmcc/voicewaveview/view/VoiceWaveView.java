@@ -152,7 +152,26 @@ public class VoiceWaveView extends View {
     //压缩波形生成MAX_LINES个的波形图
     private LinkedList<WaveBean> getCompressLinkedList() {
         if(allLinkedList.size() == 0) {
-            return linkedList;
+            int remain_size = maxLines - linkedList.size();
+            LinkedList<WaveBean> compressList = new LinkedList<WaveBean>();
+            if(remain_size >= linkedList.size()) {
+                int compress_ratio = remain_size / linkedList.size();
+                for(WaveBean waveBean : linkedList) {
+                    compressList.add(waveBean);
+                    for(int i = 0; i < compress_ratio; i++)
+                        compressList.add(new WaveBean(waveBean.getYoffset()));
+                }
+            } else {
+                int compress_ratio = linkedList.size() / remain_size;
+                int current_postion = 1;
+                for(WaveBean waveBean : linkedList) {
+                    compressList.add(waveBean);
+                    if(current_postion % compress_ratio == 0)
+                        compressList.add(new WaveBean(waveBean.getYoffset()));
+                    current_postion++;
+                }
+            }
+            return compressList;
         } else {
             allLinkedList.addAll(linkedList);
             LinkedList<WaveBean> compressList = new LinkedList<WaveBean>();
