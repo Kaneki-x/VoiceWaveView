@@ -90,7 +90,7 @@ public class VoiceWaveView extends View {
                 drawWave(canvas, compressLinkedList);
                 record_flag = false;
             } else {
-                WaveBean wave = new WaveBean(random.nextInt(30));
+                WaveBean wave = new WaveBean(random.nextInt(30)+1);
                 //链表长度超过能显示的最大数
                 if (linkedList.size() > maxLines) {
                     allLinkedList.add(linkedList.getFirst());
