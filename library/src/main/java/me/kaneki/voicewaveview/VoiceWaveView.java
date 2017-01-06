@@ -8,8 +8,6 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.kaneki.voicewaveview.R;
-
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Timer;
@@ -51,15 +49,6 @@ public class VoiceWaveView extends View {
     private LinkedList<WaveBean> allLinkedList;
     private LinkedList<WaveBean> compressLinkedList;
 
-    private static final int[] mAttr = { R.attr.backgroundColor, R.attr.activeLineColor, R.attr.inactiveLineColor, R.attr.lineWidth, R.attr.dividerWidth, R.attr.duration };
-    private static final int ATTR_BACKGROUND_COLOR = 0;
-    private static final int ATTR_ACTIVE_LINE_COLOR = 1;
-    private static final int ATTR_INACTIVE_LINE_COLOR = 2;
-    private static final int ATTR_LINE_WIDTH = 3;
-    private static final int ATTR_DIVIDER_WIDTH = 4;
-    private static final int ATTR_DURATION = 5;
-
-
     public VoiceWaveView(Context context) {
         this(context, null);
     }
@@ -76,14 +65,14 @@ public class VoiceWaveView extends View {
     }
 
     private void initParameters(AttributeSet attrs) {
-        TypedArray ta = context.obtainStyledAttributes(attrs, mAttr);
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.VoiceWaveView);
 
-        backgroundColor = ta.getColor(mAttr[ATTR_BACKGROUND_COLOR], Color.parseColor("#7f7f7f"));
-        activeLineColor = ta.getColor(mAttr[ATTR_ACTIVE_LINE_COLOR], Color.parseColor("#ffffff"));
-        inactiveLineColor = ta.getColor(mAttr[ATTR_INACTIVE_LINE_COLOR], Color.parseColor("#99ffffff"));
-        lineWidth = ta.getDimension(mAttr[ATTR_LINE_WIDTH], 3.0f);
-        dividerWidth = ta.getDimension(mAttr[ATTR_DIVIDER_WIDTH], 8.0f);
-        maxDuration = ta.getInt(mAttr[ATTR_DURATION], 60);
+        backgroundColor = ta.getColor(R.styleable.VoiceWaveView_backgroundColor, Color.parseColor("#7f7f7f"));
+        activeLineColor = ta.getColor(R.styleable.VoiceWaveView_activeLineColor, Color.parseColor("#ffffff"));
+        inactiveLineColor = ta.getColor(R.styleable.VoiceWaveView_inactiveLineColor, Color.parseColor("#99ffffff"));
+        lineWidth = ta.getDimension(R.styleable.VoiceWaveView_lineWidth, 3.0f);
+        dividerWidth = ta.getDimension(R.styleable.VoiceWaveView_duration, 8.0f);
+        maxDuration = ta.getInt(R.styleable.VoiceWaveView_duration, 60);
 
         ta.recycle();
 

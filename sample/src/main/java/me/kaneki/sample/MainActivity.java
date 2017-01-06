@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import me.echo.voicewaveview.R;
 import me.kaneki.voicewaveview.VoiceWaveView;
 
 public class MainActivity extends AppCompatActivity {
