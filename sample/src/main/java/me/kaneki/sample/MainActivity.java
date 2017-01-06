@@ -1,12 +1,12 @@
-package com.cmcc.voicewaveview;
+package me.kaneki.sample;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import com.cmcc.voicewaveview.view.VoiceWaveView;
-import com.echo.voicewaveview.R;
+import me.echo.voicewaveview.R;
+import me.kaneki.voicewaveview.VoiceWaveView;
 
 public class MainActivity extends AppCompatActivity {
 

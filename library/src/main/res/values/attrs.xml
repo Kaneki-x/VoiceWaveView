@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="VoiceWaveView">
+        <attr name="backgroundColor" format="color"/>
+        <attr name="activeLineColor" format="color"/>
+        <attr name="inactiveLineColor" format="color"/>
+        <attr name="lineWidth" format="dimension"/>
+        <attr name="dividerWidth" format="dimension"/>
+        <attr name="duration" format="integer" />
+    </declare-styleable>
+</resources>

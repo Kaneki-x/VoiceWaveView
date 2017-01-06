@@ -3,17 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:vwv="http://schemas.android.com/apk/res-auto"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.cmcc.voicewaveview.MainActivity">
+    tools:context="me.kaneki.sample.MainActivity">
 
 
-    <com.cmcc.voicewaveview.view.VoiceWaveView
+    <me.kaneki.voicewaveview.VoiceWaveView
         android:id="@+id/wvw_main"
         android:visibility="visible"
-        android:layout_width="match_parent"
+        vwv:backgroundColor="#FF4081"
+        android:layout_width="200dp"
         android:layout_height="55dp" />
 
     <Button

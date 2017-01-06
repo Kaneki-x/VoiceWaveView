@@ -1,11 +1,14 @@
-package com.cmcc.voicewaveview.view;
+package me.kaneki.voicewaveview;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.kaneki.voicewaveview.R;
 
 import java.util.LinkedList;
 import java.util.Random;
@@ -30,13 +33,12 @@ public class VoiceWaveView extends View {
     private boolean isRecordPause = false;  //停止画图线程标识
     private boolean isPlayPause = false;   //是否需要重绘标识
 
-    private final String COLOR_BACKGROUND = "#7f7f7f";
-    private final String COLOR_LINE = "#ffffff";
-    private final String COLOR_LINE_UNPLAYED = "#99ffffff";
-
-    private final float X_DIVIDER_WIDTH = 8; //线条间隔
-    private final float LINE_WIDTH = 3; //线宽
-    private final int MAX_TIME = 60; //最大录音时间
+    private int backgroundColor;
+    private int activeLineColor;
+    private int inactiveLineColor;
+    private float dividerWidth = 8; //线条间隔
+    private float lineWidth = 3; //线宽
+    private int maxDuration = 60; //最大录音时间
 
     private Context context;
     private VoiceDrawTask voiceDrawTask;
@@ -49,32 +51,55 @@ public class VoiceWaveView extends View {
     private LinkedList<WaveBean> allLinkedList;
     private LinkedList<WaveBean> compressLinkedList;
 
+    private static final int[] mAttr = { R.attr.backgroundColor, R.attr.activeLineColor, R.attr.inactiveLineColor, R.attr.lineWidth, R.attr.dividerWidth, R.attr.duration };
+    private static final int ATTR_BACKGROUND_COLOR = 0;
+    private static final int ATTR_ACTIVE_LINE_COLOR = 1;
+    private static final int ATTR_INACTIVE_LINE_COLOR = 2;
+    private static final int ATTR_LINE_WIDTH = 3;
+    private static final int ATTR_DIVIDER_WIDTH = 4;
+    private static final int ATTR_DURATION = 5;
+
+
     public VoiceWaveView(Context context) {
         this(context, null);
     }
 
     public VoiceWaveView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
-        // TODO Auto-generated constructor stub
     }
 
     public VoiceWaveView(Context context, AttributeSet attrs, int defStyleAttr) {
-        // TODO Auto-generated constructor stub
         super(context, attrs, defStyleAttr);
         this.context = context;
+
+        initParameters(attrs);
+    }
+
+    private void initParameters(AttributeSet attrs) {
+        TypedArray ta = context.obtainStyledAttributes(attrs, mAttr);
+
+        backgroundColor = ta.getColor(mAttr[ATTR_BACKGROUND_COLOR], Color.parseColor("#7f7f7f"));
+        activeLineColor = ta.getColor(mAttr[ATTR_ACTIVE_LINE_COLOR], Color.parseColor("#ffffff"));
+        inactiveLineColor = ta.getColor(mAttr[ATTR_INACTIVE_LINE_COLOR], Color.parseColor("#99ffffff"));
+        lineWidth = ta.getDimension(mAttr[ATTR_LINE_WIDTH], 3.0f);
+        dividerWidth = ta.getDimension(mAttr[ATTR_DIVIDER_WIDTH], 8.0f);
+        maxDuration = ta.getInt(mAttr[ATTR_DURATION], 60);
+
+        ta.recycle();
+
         timer = new Timer();
         paint = new Paint();
         paint.setFakeBoldText(true);  //设置粗体
-        paint.setStrokeWidth(LINE_WIDTH); //设置线宽
+        paint.setStrokeWidth(lineWidth); //设置线宽
 
-        allLinkedList = new LinkedList<WaveBean>();
-        linkedList = new LinkedList<WaveBean>();
+        allLinkedList = new LinkedList<>();
+        linkedList = new LinkedList<>();
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        maxLines = (int) ((getWidth()-10) / (X_DIVIDER_WIDTH));  //根据控件宽度计算可以容纳单个波纹的最大个数
+        maxLines = (int) ((getWidth() - 10) / (dividerWidth));  //根据控件宽度计算可以容纳单个波纹的最大个数
     }
 
     @Override
@@ -84,7 +109,7 @@ public class VoiceWaveView extends View {
         if(mode == MODE_RECORDING) {
             paint.setColor(Color.WHITE);
             //录制最大时间
-            if (duration/1000 == MAX_TIME || isRecordPause) {
+            if (duration/1000 == maxDuration || isRecordPause) {
                 //获得压缩后的波形并画出
                 compressLinkedList = getCompressLinkedList();
                 drawWave(canvas, compressLinkedList);
@@ -125,7 +150,7 @@ public class VoiceWaveView extends View {
         int i = linkedList.size();
         for (WaveBean bean : linkedList) {
             //从表头开始画
-            canvas.drawLine(bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF + bean.getYoffset(), paint);
+            canvas.drawLine(bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF + bean.getYoffset(), paint);
             i--;
         }
     }
@@ -135,10 +160,10 @@ public class VoiceWaveView extends View {
         for (WaveBean bean : compressLinkedList) {
             //从表头开始画
             if (compressLinkedList.size() - i <= current_position)
-                paint.setColor(Color.parseColor(COLOR_LINE));
+                paint.setColor(activeLineColor);
             else
-                paint.setColor(Color.parseColor(COLOR_LINE_UNPLAYED));
-            canvas.drawLine(bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * X_DIVIDER_WIDTH, bean.HEIGHT_HALF + bean.getYoffset(), paint);
+                paint.setColor(inactiveLineColor);
+            canvas.drawLine(bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF + bean.getYoffset(), paint);
             i--;
         }
     }
@@ -146,7 +171,7 @@ public class VoiceWaveView extends View {
     //清屏画背景
     private void drawBackground(Canvas canvas) {
         if(canvas != null)
-            canvas.drawColor(Color.parseColor(COLOR_BACKGROUND));
+            canvas.drawColor(backgroundColor);
     }
 
     //压缩波形生成MAX_LINES个的波形图
@@ -269,8 +294,8 @@ public class VoiceWaveView extends View {
             while (record_flag) {
                 try {
                     postInvalidate();
-                    Thread.sleep(100);
-                    duration += 100;
+                    Thread.sleep(50);
+                    duration += 50;
                 } catch (Exception ex) {
                 }
             }
@@ -310,7 +335,6 @@ public class VoiceWaveView extends View {
         private float y_offset;
 
         public WaveBean(float y_offset) {
-            super();
             this.y_offset = y_offset;
         }
 
