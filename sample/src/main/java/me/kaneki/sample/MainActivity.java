@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.Random;
+
 import me.kaneki.voicewaveview.VoiceWaveView;
 
 public class MainActivity extends AppCompatActivity {
@@ -16,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
     Button btn_main3;
     Button btn_main4;
     Button btn_main5;
+
+    Random random = new Random();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +38,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 wvw_main.startRecord();
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (true) {
+                            try {
+                                wvw_main.setWaveHeight(random.nextInt(100) + 1);
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }).start();
             }
         });
 
