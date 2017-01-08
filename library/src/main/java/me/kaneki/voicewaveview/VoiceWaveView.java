@@ -106,22 +106,12 @@ public class VoiceWaveView extends View {
         if(mode == MODE_RECORDING) {
             paint.setColor(activeLineColor);
             //录制最大时间
-            if (duration/1000 == maxDuration || isRecordPause)
+            if (isRecordPause)
                 drawWave(canvas, compressLinkedList);
             else
                 drawWave(canvas, linkedList);
         } else if (mode == MODE_PLAYING) {
-            if(!isPlayPause) {
-                if (current_position == compressLinkedList.size()) {
-                    drawPlayWave(canvas, current_position);
-                    play_flag = false;
-                } else {
-                    drawPlayWave(canvas, current_position);
-                    current_position++;
-                }
-            } else {
-                drawPlayWave(canvas, current_position);
-            }
+            drawPlayWave(canvas, current_position);
         }
     }
 
@@ -288,8 +278,8 @@ public class VoiceWaveView extends View {
         public void run() {
             while (record_flag) {
                 try {
-                    Thread.sleep(50);
-                    duration += 50;
+                    Thread.sleep(refreshRatio);
+                    duration += refreshRatio;
                     //录制最大时间
                     if (duration/1000 >= maxDuration || isRecordPause) {
                         //获得压缩后的波形并画出
@@ -298,7 +288,6 @@ public class VoiceWaveView extends View {
                         isRecordPause = true;
                         record_flag = false;
                     } else {
-                        System.out.println(waveHeight);
                         WaveBean wave = new WaveBean(waveHeight);
                         //链表长度超过能显示的最大数
                         if (linkedList.size() > maxLines) {
@@ -332,6 +321,12 @@ public class VoiceWaveView extends View {
         public void run() {
             while(play_flag) {
                 try {
+                    if(!isPlayPause) {
+                        if (current_position == compressLinkedList.size())
+                            play_flag = false;
+                        else
+                            current_position++;
+                    }
                     postInvalidate();
                     Thread.sleep(playSleepTime);
                 } catch (Exception ex) {
