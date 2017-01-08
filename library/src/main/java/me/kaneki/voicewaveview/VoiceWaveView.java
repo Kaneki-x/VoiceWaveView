@@ -9,7 +9,6 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import java.util.LinkedList;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -37,6 +36,7 @@ public class VoiceWaveView extends View {
     private int inactiveLineColor;
     private float dividerWidth; //线条间隔
     private float lineWidth; //线宽
+    private long refreshRatio; //刷新间隔
     private int maxDuration; //最大录音时间
 
     private Context context;
@@ -76,6 +76,7 @@ public class VoiceWaveView extends View {
         inactiveLineColor = ta.getColor(R.styleable.VoiceWaveView_inactiveLineColor, Color.parseColor("#99ffffff"));
         lineWidth = ta.getDimension(R.styleable.VoiceWaveView_lineWidth, 3.0f);
         dividerWidth = ta.getDimension(R.styleable.VoiceWaveView_duration, 8.0f);
+        refreshRatio = ta.getInt(R.styleable.VoiceWaveView_refreshRatio, 50);
         maxDuration = ta.getInt(R.styleable.VoiceWaveView_duration, 60);
 
         ta.recycle();

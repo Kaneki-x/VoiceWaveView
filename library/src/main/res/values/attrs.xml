@@ -7,5 +7,6 @@
         <attr name="lineWidth" format="dimension"/>
         <attr name="dividerWidth" format="dimension"/>
         <attr name="duration" format="integer" />
+        <attr name="refreshRatio" format="integer" />
     </declare-styleable>
 </resources>
