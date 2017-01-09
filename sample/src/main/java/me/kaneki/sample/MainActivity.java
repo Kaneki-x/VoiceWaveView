@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         btn_main2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wvw_main.pauseRecord();
+                wvw_main.stopRecord();
             }
         });
 

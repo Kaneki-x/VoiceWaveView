@@ -47,29 +47,48 @@ public class VoiceWaveView extends View {
     private final static int MODE_RECORDING = 0;
     private final static int MODE_PLAYING = 1;
 
+    //录制计时
     private long duration = 0;
+    //播放线程等待间隔
     private long playSleepTime = 0;
 
+    //播放波形位置
     private int current_position = 1;
+    //View能包含的最大波形个数
     private int maxLines = 0;
+    //当前模式
     private int mode = -1;
+    //波形最大高度
     private float maxWaveHeight;
 
-    private boolean record_flag = false;  //整体运行标识
-    private boolean play_flag = false;  //整体运行标识
-    private boolean isRecordPause = false;  //停止画图线程标识
-    private boolean isPlayPause = false;   //是否需要重绘标识
+    //录制线程运行标记
+    private boolean record_flag = false;
+    //播放线程标记
+    private boolean play_flag = false;
+    //录制暂停标记
+    private boolean isRecordPause = false;
+    //播放暂停标记
+    private boolean isPlayPause = false;
 
+    //控件背景色
     private int backgroundColor;
+    //波形颜色
     private int activeLineColor;
+    //待播放波形颜色
     private int inactiveLineColor;
-    private float dividerWidth; //线条间隔
-    private float lineWidth; //线宽
-    private long refreshRatio; //刷新间隔
-    private int maxDuration; //最大录音时间
+    //波形间隔
+    private float dividerWidth;
+    //波形线宽
+    private float lineWidth;
+    //刷新间隔
+    private long refreshRatio;
+    //最大录音时间
+    private int maxDuration;
 
     private Context context;
+    //波形录制线程
     private VoiceDrawTask voiceDrawTask;
+    //波形播放线程
     private VoicePlayDrawTask voicePlayDrawTask;
     private Paint paint;
     private Timer timer;
@@ -78,6 +97,7 @@ public class VoiceWaveView extends View {
     private LinkedList<WaveBean> allLinkedList;
     private LinkedList<WaveBean> compressLinkedList;
 
+    //对外波形高度参数 volatile标记作为初步线程同步作用
     private volatile float waveHeight;
 
     public VoiceWaveView(Context context) {
@@ -96,6 +116,10 @@ public class VoiceWaveView extends View {
         initParameters();
     }
 
+    /**
+     * 初始化自定义参数
+     * @param attrs
+     */
     private void initAttrs(AttributeSet attrs) {
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.VoiceWaveView);
 
@@ -110,11 +134,18 @@ public class VoiceWaveView extends View {
         ta.recycle();
     }
 
+    /**
+     * 初始化变量
+     */
     private void initParameters() {
         timer = new Timer();
         paint = new Paint();
-        paint.setFakeBoldText(true);  //设置粗体
-        paint.setStrokeWidth(lineWidth); //设置线宽
+        //设置抗锯齿
+        paint.setAntiAlias(true);
+        //设置粗体
+        paint.setFakeBoldText(true);
+        //设置画笔宽度
+        paint.setStrokeWidth(lineWidth);
 
         allLinkedList = new LinkedList<>();
         linkedList = new LinkedList<>();
@@ -123,8 +154,10 @@ public class VoiceWaveView extends View {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
+        //计算波形最大高度 View高度的60%
         maxWaveHeight = getHeight() / 2 * 0.6f;
-        maxLines = (int) ((getWidth() - 10) / (dividerWidth));  //根据控件宽度计算可以容纳单个波纹的最大个数
+        //计算View能够容纳显示的最大波形个数
+        maxLines = (int) ((getWidth() - 10) / (dividerWidth));
     }
 
     @Override
@@ -133,7 +166,7 @@ public class VoiceWaveView extends View {
         drawBackground(canvas);
         if(mode == MODE_RECORDING) {
             paint.setColor(activeLineColor);
-            //录制最大时间
+            //露珠是否暂停
             if (isRecordPause)
                 drawWave(canvas, compressLinkedList);
             else
@@ -152,11 +185,17 @@ public class VoiceWaveView extends View {
     protected void onVisibilityChanged(View changedView, int visibility) {
         super.onVisibilityChanged(changedView, visibility);
         if(visibility != VISIBLE) {
+            //可见性发生变化时 释放资源
             isRecordPause = true;
             releaseAll();
         }
     }
 
+    /**
+     * 根据波形链表话波形
+     * @param canvas
+     * @param linkedList
+     */
     private void drawWave(Canvas canvas, LinkedList<WaveBean> linkedList) {
         int i = linkedList.size();
         for (WaveBean bean : linkedList) {
@@ -166,6 +205,11 @@ public class VoiceWaveView extends View {
         }
     }
 
+    /**
+     * 根据当前播放位置画播放状态波形图
+     * @param canvas
+     * @param current_position
+     */
     private void drawPlayWave(Canvas canvas, int current_position) {
         int i = compressLinkedList.size();
         for (WaveBean bean : compressLinkedList) {
@@ -179,13 +223,19 @@ public class VoiceWaveView extends View {
         }
     }
 
-    //清屏画背景
+    /**
+     * 画背景
+     * @param canvas
+     */
     private void drawBackground(Canvas canvas) {
         if(canvas != null)
             canvas.drawColor(backgroundColor);
     }
 
-    //压缩波形生成MAX_LINES个的波形图
+    /**
+     * 压缩波形生成MAX_LINES个的波形列表
+     * @return
+     */
     private LinkedList<WaveBean> getCompressLinkedList() {
         if(allLinkedList.size() == 0) {
             int remain_size = maxLines - linkedList.size();
@@ -230,24 +280,29 @@ public class VoiceWaveView extends View {
         }
     }
 
+    /**
+     * 开始录制
+     */
     public void startRecord() {
         releaseAll();
         mode = MODE_RECORDING;
         isRecordPause = false;
         duration = 0;
-        voiceDrawTask = new VoiceDrawTask();  //波纹画图线程初始化
-        timer.schedule(voiceDrawTask, 200);   //延迟200ms执行
+        voiceDrawTask = new VoiceDrawTask();
+        timer.schedule(voiceDrawTask, 200);
     }
 
-    public void pauseRecord() {
-        isRecordPause = true;
-    }
-
+    /**
+     * 停止录制
+     */
     public void stopRecord() {
         isRecordPause = true;
-        releaseAll();
     }
 
+    /**
+     * 录制波形高度设置 0-100%
+     * @param percent
+     */
     public void setWaveHeight(int percent) {
         if (!isRecordPause) {
             if (percent >= 100 || percent <= 0)
@@ -256,7 +311,10 @@ public class VoiceWaveView extends View {
             waveHeight = maxWaveHeight * percent / 100;
         }
     }
-    //启动语音播放波纹，必须在stopRecord后或者达到最长录音时间后调用
+
+    /**
+     * 启动录制波形播放，必须在stopRecord后或者达到最长录音时间后调用
+     */
     public void startPlay() {
         if(compressLinkedList != null) {
             releaseThread();
@@ -269,6 +327,9 @@ public class VoiceWaveView extends View {
         }
     }
 
+    /**
+     * 暂停播放
+     */
     public void pausePlay() {
         if (isPlayPause)
             isPlayPause = false;
@@ -276,6 +337,9 @@ public class VoiceWaveView extends View {
             isPlayPause = true;
     }
 
+    /**
+     * 释放线程和链表资源
+     */
     private void releaseAll() {
         releaseThread();
         if(allLinkedList != null) {
@@ -296,7 +360,9 @@ public class VoiceWaveView extends View {
             voicePlayDrawTask.cancel();
     }
 
-    //绘制波形线程
+    /**
+     * 波形绘制线程
+     */
     private class VoiceDrawTask extends TimerTask {
 
         public VoiceDrawTask() {
@@ -305,6 +371,7 @@ public class VoiceWaveView extends View {
 
         @Override
         public boolean cancel() {
+            //停止标记
             record_flag = false;
             return true;
         }
@@ -313,7 +380,6 @@ public class VoiceWaveView extends View {
         public void run() {
             while (record_flag) {
                 try {
-                    Thread.sleep(refreshRatio);
                     duration += refreshRatio;
                     //录制最大时间
                     if (duration/1000 >= maxDuration || isRecordPause) {
@@ -331,6 +397,7 @@ public class VoiceWaveView extends View {
                         }
                         linkedList.add(wave); //加入表尾
                         postInvalidate();
+                        Thread.sleep(refreshRatio);
                     }
                 } catch (Exception ex) {
                 }
