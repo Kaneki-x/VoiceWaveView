@@ -14,7 +14,6 @@
     <me.kaneki.voicewaveview.VoiceWaveView
         android:id="@+id/wvw_main"
         android:visibility="visible"
-        app:backgroundColor="#FF4081"
         android:layout_width="200dp"
         android:layout_height="55dp" />
 

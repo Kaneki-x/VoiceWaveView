@@ -32,7 +32,9 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -94,8 +96,8 @@ public class VoiceWaveView extends View {
     private Timer timer;
 
     private LinkedList<WaveBean> linkedList;
-    private LinkedList<WaveBean> allLinkedList;
-    private LinkedList<WaveBean> compressLinkedList;
+    private ArrayList<WaveBean> allLinkedList;
+    private ArrayList<WaveBean> compressLinkedList;
 
     //对外波形高度参数 volatile标记作为初步线程同步作用
     private volatile float waveHeight;
@@ -147,7 +149,7 @@ public class VoiceWaveView extends View {
         //设置画笔宽度
         paint.setStrokeWidth(lineWidth);
 
-        allLinkedList = new LinkedList<>();
+        allLinkedList = new ArrayList<>();
         linkedList = new LinkedList<>();
     }
 
@@ -194,11 +196,11 @@ public class VoiceWaveView extends View {
     /**
      * 根据波形链表话波形
      * @param canvas
-     * @param linkedList
+     * @param waveBeanList
      */
-    private void drawWave(Canvas canvas, LinkedList<WaveBean> linkedList) {
-        int i = linkedList.size();
-        for (WaveBean bean : linkedList) {
+    private void drawWave(Canvas canvas, List<WaveBean> waveBeanList) {
+        int i = waveBeanList.size();
+        for (WaveBean bean : waveBeanList) {
             //从表头开始画
             canvas.drawLine(bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF + bean.getYoffset(), paint);
             i--;
@@ -236,10 +238,10 @@ public class VoiceWaveView extends View {
      * 压缩波形生成MAX_LINES个的波形列表
      * @return
      */
-    private LinkedList<WaveBean> getCompressLinkedList() {
+    private ArrayList<WaveBean> getCompressLinkedList() {
         if(allLinkedList.size() == 0) {
             int remain_size = maxLines - linkedList.size();
-            LinkedList<WaveBean> compressList = new LinkedList<>();
+            ArrayList<WaveBean> compressList = new ArrayList<>();
             if(remain_size >= linkedList.size()) {
                 int compress_ratio = remain_size / linkedList.size();
                 for(WaveBean waveBean : linkedList) {
@@ -260,8 +262,8 @@ public class VoiceWaveView extends View {
             return compressList;
         } else {
             allLinkedList.addAll(linkedList);
-            LinkedList<WaveBean> compressList = new LinkedList<>();
-            int compress_ratio = allLinkedList.size()/maxLines;
+            ArrayList<WaveBean> compressList = new ArrayList<>();
+            int compress_ratio = allLinkedList.size() / maxLines;
             float average = 0;
             for (int i = 1; i <= allLinkedList.size(); i++) {
                 if(i % compress_ratio == 0) {
@@ -393,9 +395,11 @@ public class VoiceWaveView extends View {
                         //链表长度超过能显示的最大数
                         if (linkedList.size() > maxLines) {
                             allLinkedList.add(linkedList.getFirst());
-                            linkedList.removeFirst(); //移除链表头
+                            //移除链表头
+                            linkedList.removeFirst();
                         }
-                        linkedList.add(wave); //加入表尾
+                        //加入表尾
+                        linkedList.add(wave);
                         postInvalidate();
                         Thread.sleep(refreshRatio);
                     }
@@ -405,7 +409,9 @@ public class VoiceWaveView extends View {
         }
     }
 
-    //  绘图播放波形线程
+    /**
+     * 录制波形播放线程
+     */
     private class VoicePlayDrawTask extends TimerTask {
 
         public VoicePlayDrawTask() {
