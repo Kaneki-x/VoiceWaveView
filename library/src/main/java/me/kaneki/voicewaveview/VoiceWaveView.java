@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2017 Kaneki
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package me.kaneki.voicewaveview;
 
 import android.content.Context;
@@ -12,7 +36,12 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-//语音波形视图
+/**
+ * @author Kaneki
+ * @Desctription 语音波形控件
+ * @date 2017-01-01
+ * @email yueqian@meili-inc.com
+ */
 public class VoiceWaveView extends View {
 
     private final static int MODE_RECORDING = 0;
@@ -64,7 +93,6 @@ public class VoiceWaveView extends View {
         this.context = context;
 
         initAttrs(attrs);
-
         initParameters();
     }
 
@@ -116,10 +144,17 @@ public class VoiceWaveView extends View {
     }
 
     @Override
+    public boolean isHardwareAccelerated() {
+        return true;
+    }
+
+    @Override
     protected void onVisibilityChanged(View changedView, int visibility) {
         super.onVisibilityChanged(changedView, visibility);
-        if(visibility != VISIBLE)
+        if(visibility != VISIBLE) {
+            isRecordPause = true;
             releaseAll();
+        }
     }
 
     private void drawWave(Canvas canvas, LinkedList<WaveBean> linkedList) {
@@ -164,12 +199,12 @@ public class VoiceWaveView extends View {
                 }
             } else {
                 int compress_ratio = linkedList.size() / remain_size;
-                int current_postion = 1;
+                int current_position = 1;
                 for(WaveBean waveBean : linkedList) {
                     compressList.add(waveBean);
-                    if(current_postion % compress_ratio == 0)
+                    if(current_position % compress_ratio == 0)
                         compressList.add(new WaveBean(waveBean.getYoffset()));
-                    current_postion++;
+                    current_position++;
                 }
             }
             return compressList;
@@ -181,7 +216,7 @@ public class VoiceWaveView extends View {
             for (int i = 1; i <= allLinkedList.size(); i++) {
                 if(i % compress_ratio == 0) {
                     if(compressList.size() < maxLines) {
-                        average = average == 0 ? allLinkedList.get(i-1).getYoffset(): average;
+                        average = average == 0 ? allLinkedList.get(i - 1).getYoffset() : average;
                         compressList.add(new WaveBean(average / compress_ratio));
                         average = 0;
                     } else {
@@ -312,7 +347,6 @@ public class VoiceWaveView extends View {
 
         @Override
         public boolean cancel() {
-            // TODO Auto-generated method stub\
             play_flag = false;
             return true;
         }
