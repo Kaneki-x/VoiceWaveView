@@ -99,7 +99,7 @@ public class VoiceWaveView extends View {
     private ArrayList<WaveBean> allLinkedList;
     private ArrayList<WaveBean> compressLinkedList;
 
-    //对外波形高度参数 volatile标记作为初步线程同步作用
+    //对外波形高度参数 volatile标记作为线程同步作用
     private volatile float waveHeight;
 
     public VoiceWaveView(Context context) {
