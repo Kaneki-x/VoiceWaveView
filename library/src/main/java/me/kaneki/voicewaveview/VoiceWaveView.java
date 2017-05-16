@@ -1,27 +1,3 @@
-/*
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Kaneki
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 package me.kaneki.voicewaveview;
 
 import android.content.Context;
@@ -29,6 +5,8 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -39,10 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * @author Kaneki
- * @Desctription 语音波形控件
- * @date 2017-01-01
- * @email yueqian@meili-inc.com
+ * @author kaneki
  */
 public class VoiceWaveView extends View {
 
@@ -86,6 +61,8 @@ public class VoiceWaveView extends View {
     private long refreshRatio;
     //最大录音时间
     private int maxDuration;
+    //背景图
+    private Drawable backgrounDrawable;
 
     private Context context;
     //波形录制线程
@@ -132,6 +109,7 @@ public class VoiceWaveView extends View {
         dividerWidth = ta.getDimension(R.styleable.VoiceWaveView_duration, 8.0f);
         refreshRatio = ta.getInt(R.styleable.VoiceWaveView_refreshRatio, 50);
         maxDuration = ta.getInt(R.styleable.VoiceWaveView_duration, 60);
+        backgrounDrawable = getBackground();
 
         ta.recycle();
     }
@@ -168,7 +146,7 @@ public class VoiceWaveView extends View {
         drawBackground(canvas);
         if(mode == MODE_RECORDING) {
             paint.setColor(activeLineColor);
-            //露珠是否暂停
+            //录制是否暂停
             if (isRecordPause)
                 drawWave(canvas, compressLinkedList);
             else
@@ -230,8 +208,10 @@ public class VoiceWaveView extends View {
      * @param canvas
      */
     private void drawBackground(Canvas canvas) {
-        if(canvas != null)
-            canvas.drawColor(backgroundColor);
+        if(canvas != null) {
+            if (backgrounDrawable == null)
+                canvas.drawColor(backgroundColor);
+        }
     }
 
     /**
@@ -404,6 +384,7 @@ public class VoiceWaveView extends View {
                         Thread.sleep(refreshRatio);
                     }
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                 }
             }
         }
@@ -437,7 +418,7 @@ public class VoiceWaveView extends View {
                     postInvalidate();
                     Thread.sleep(playSleepTime);
                 } catch (Exception ex) {
-
+                    ex.printStackTrace();
                 }
             }
         }
