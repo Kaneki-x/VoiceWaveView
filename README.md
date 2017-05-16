@@ -1,6 +1,5 @@
 # VoiceWaveView
--
-
+---
 [![License](https://img.shields.io/badge/license-Apache%202-green.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Download](https://api.bintray.com/packages/echohaha/maven/VoiceWaveView/images/download.svg) ](https://bintray.com/echohaha/maven/VoiceWaveView/_latestVersion)
 
@@ -90,7 +89,7 @@ Please feel free to :)
 ## Change Log
 
 ### 0.0.1（2017-05-17）
-- library first build])
+- library first build
 
 
 ## Community
