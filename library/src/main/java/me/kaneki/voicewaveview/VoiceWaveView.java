@@ -75,7 +75,8 @@ public class VoiceWaveView extends View {
     private Timer timer;
 
     private LinkedList<WaveBean> linkedList;
-    private ArrayList<WaveBean> allLinkedList;
+    private LinkedList<WaveBean> allLinkedList;
+    private LinkedList<WaveBean> defaultLinkedList;
     private ArrayList<WaveBean> compressLinkedList;
 
     //对外波形高度参数 volatile标记作为线程同步作用
@@ -129,7 +130,8 @@ public class VoiceWaveView extends View {
         //设置画笔宽度
         paint.setStrokeWidth(lineWidth);
 
-        allLinkedList = new ArrayList<>();
+        allLinkedList = new LinkedList<>();
+        defaultLinkedList = new LinkedList<>();
         linkedList = new LinkedList<>();
     }
 
@@ -143,6 +145,8 @@ public class VoiceWaveView extends View {
 
         HEIGHT_HALF = getHeight()/2;
         WIDTH = getWidth();
+
+        initDefaultWaveList();
     }
 
     @Override
@@ -187,6 +191,7 @@ public class VoiceWaveView extends View {
         isRecordPause = false;
         duration = 0;
         voiceDrawTask = new VoiceDrawTask();
+        linkedList.addAll(defaultLinkedList);
         timer.schedule(voiceDrawTask, 200);
     }
 
@@ -263,6 +268,12 @@ public class VoiceWaveView extends View {
 
     /********************* 内部方法 *********************/
 
+    private void initDefaultWaveList() {
+        for (int i = 0; i < maxLines; i++) {
+            defaultLinkedList.add(new WaveBean(1));
+        }
+    }
+
     /**
      * 根据波形链表话波形
      * @param canvas
@@ -313,7 +324,7 @@ public class VoiceWaveView extends View {
     private ArrayList<WaveBean> getCompressLinkedList() {
         if(allLinkedList.size() == 0) {
             int remain_size = maxLines - linkedList.size();
-            ArrayList<WaveBean> compressList = new ArrayList<>();
+            ArrayList<WaveBean> compressList = new ArrayList<>(maxLines);
             if(remain_size >= linkedList.size()) {
                 int compress_ratio = remain_size / linkedList.size();
                 for(WaveBean waveBean : linkedList) {
@@ -333,8 +344,7 @@ public class VoiceWaveView extends View {
             }
             return compressList;
         } else {
-            allLinkedList.addAll(linkedList);
-            ArrayList<WaveBean> compressList = new ArrayList<>();
+            ArrayList<WaveBean> compressList = new ArrayList<>(maxLines);
             int compress_ratio = allLinkedList.size() / maxLines;
             float average = 0;
             for (int i = 1; i <= allLinkedList.size(); i++) {
@@ -409,10 +419,10 @@ public class VoiceWaveView extends View {
                         WaveBean wave = new WaveBean(waveHeight);
                         //链表长度超过能显示的最大数
                         if (linkedList.size() > maxLines) {
-                            allLinkedList.add(linkedList.getFirst());
                             //移除链表头
                             linkedList.removeFirst();
                         }
+                        allLinkedList.add(wave);
                         //加入表尾
                         linkedList.add(wave);
                         postInvalidate();
@@ -422,6 +432,7 @@ public class VoiceWaveView extends View {
                     ex.printStackTrace();
                 }
             }
+            linkedList.clear();
         }
     }
 
