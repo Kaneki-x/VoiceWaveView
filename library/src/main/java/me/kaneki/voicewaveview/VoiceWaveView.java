@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -23,6 +22,9 @@ public class VoiceWaveView extends View {
 
     private final static int MODE_RECORDING = 0;
     private final static int MODE_PLAYING = 1;
+
+    private float HEIGHT_HALF;
+    private float WIDTH;
 
     //录制计时
     private long duration = 0;
@@ -138,6 +140,9 @@ public class VoiceWaveView extends View {
         maxWaveHeight = getHeight() / 2 * 0.6f;
         //计算View能够容纳显示的最大波形个数
         maxLines = (int) ((getWidth() - 10) / (dividerWidth));
+
+        HEIGHT_HALF = getHeight()/2;
+        WIDTH = getWidth();
     }
 
     @Override
@@ -171,6 +176,93 @@ public class VoiceWaveView extends View {
         }
     }
 
+    /********************* 对外方法 *********************/
+
+    /**
+     * 开始录制
+     */
+    public void startRecord() {
+        releaseAll();
+        mode = MODE_RECORDING;
+        isRecordPause = false;
+        duration = 0;
+        voiceDrawTask = new VoiceDrawTask();
+        timer.schedule(voiceDrawTask, 200);
+    }
+
+    /**
+     * 停止录制
+     */
+    public void stopRecord() {
+        isRecordPause = true;
+    }
+
+    /**
+     * 录制波形高度设置 0-100%
+     * @param percent
+     */
+    public void setWaveHeightPercent(int percent) {
+        if (!isRecordPause) {
+            if (percent >= 100 || percent <= 0)
+                percent = 1;
+
+            waveHeight = maxWaveHeight * percent / 100;
+        }
+    }
+
+    /**
+     * 启动录制波形播放，必须在stopRecord后或者达到最长录音时间后调用
+     * @param playList 准备播放的波形列表，传null则播放上次stopRecord后的列表
+     */
+    public void startPlay(ArrayList<WaveBean> playList) {
+        if(playList != null) {
+            compressLinkedList = playList;
+        }
+        if (compressLinkedList != null) {
+            releaseThread();
+            mode = MODE_PLAYING;
+            isPlayPause = false;
+            current_position = 1;
+            playSleepTime = duration / compressLinkedList.size();  //根据语音时长计算单个波纹间隔
+            voicePlayDrawTask = new VoicePlayDrawTask();  //语音播放画图线程初始化
+            timer.schedule(voicePlayDrawTask, 200);  //延迟200ms执行
+        }
+    }
+
+    /**
+     * 暂停播放
+     */
+    public void pauseOrResumePlay() {
+        isPlayPause = !isPlayPause;
+    }
+
+    /**
+     * 获取当前录制的语音波形列表
+     * @return
+     */
+    public ArrayList<WaveBean> getCurrentWaveData() {
+        if (compressLinkedList != null && !compressLinkedList.isEmpty()) {
+            return compressLinkedList;
+        } else {
+            return null;
+        }
+    }
+
+    public class WaveBean {
+        private float y_offset;
+
+        private WaveBean(float y_offset) {
+            this.y_offset = y_offset;
+        }
+
+        public float getY_offset() {
+            return y_offset;
+        }
+    }
+
+
+    /********************* 内部方法 *********************/
+
     /**
      * 根据波形链表话波形
      * @param canvas
@@ -180,7 +272,7 @@ public class VoiceWaveView extends View {
         int i = waveBeanList.size();
         for (WaveBean bean : waveBeanList) {
             //从表头开始画
-            canvas.drawLine(bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF + bean.getYoffset(), paint);
+            canvas.drawLine(WIDTH - i * dividerWidth, HEIGHT_HALF - bean.getY_offset(), WIDTH - i * dividerWidth, HEIGHT_HALF + bean.getY_offset(), paint);
             i--;
         }
     }
@@ -198,7 +290,7 @@ public class VoiceWaveView extends View {
                 paint.setColor(activeLineColor);
             else
                 paint.setColor(inactiveLineColor);
-            canvas.drawLine(bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF - bean.getYoffset(), bean.WIDTH - i * dividerWidth, bean.HEIGHT_HALF + bean.getYoffset(), paint);
+            canvas.drawLine(WIDTH - i * dividerWidth, HEIGHT_HALF - bean.getY_offset(), WIDTH - i * dividerWidth, HEIGHT_HALF + bean.getY_offset(), paint);
             i--;
         }
     }
@@ -227,7 +319,7 @@ public class VoiceWaveView extends View {
                 for(WaveBean waveBean : linkedList) {
                     compressList.add(waveBean);
                     for(int i = 0; i < compress_ratio; i++)
-                        compressList.add(new WaveBean(waveBean.getYoffset()));
+                        compressList.add(new WaveBean(waveBean.getY_offset()));
                 }
             } else {
                 int compress_ratio = linkedList.size() / remain_size;
@@ -235,7 +327,7 @@ public class VoiceWaveView extends View {
                 for(WaveBean waveBean : linkedList) {
                     compressList.add(waveBean);
                     if(current_position % compress_ratio == 0)
-                        compressList.add(new WaveBean(waveBean.getYoffset()));
+                        compressList.add(new WaveBean(waveBean.getY_offset()));
                     current_position++;
                 }
             }
@@ -248,75 +340,18 @@ public class VoiceWaveView extends View {
             for (int i = 1; i <= allLinkedList.size(); i++) {
                 if(i % compress_ratio == 0) {
                     if(compressList.size() < maxLines) {
-                        average = average == 0 ? allLinkedList.get(i - 1).getYoffset() : average;
+                        average = average == 0 ? allLinkedList.get(i - 1).getY_offset() : average;
                         compressList.add(new WaveBean(average / compress_ratio));
                         average = 0;
                     } else {
                         return compressList;
                     }
                 } else {
-                    average += allLinkedList.get(i-1).getYoffset();
+                    average += allLinkedList.get(i-1).getY_offset();
                 }
             }
             return compressList;
         }
-    }
-
-    /**
-     * 开始录制
-     */
-    public void startRecord() {
-        releaseAll();
-        mode = MODE_RECORDING;
-        isRecordPause = false;
-        duration = 0;
-        voiceDrawTask = new VoiceDrawTask();
-        timer.schedule(voiceDrawTask, 200);
-    }
-
-    /**
-     * 停止录制
-     */
-    public void stopRecord() {
-        isRecordPause = true;
-    }
-
-    /**
-     * 录制波形高度设置 0-100%
-     * @param percent
-     */
-    public void setWaveHeight(int percent) {
-        if (!isRecordPause) {
-            if (percent >= 100 || percent <= 0)
-                percent = 1;
-
-            waveHeight = maxWaveHeight * percent / 100;
-        }
-    }
-
-    /**
-     * 启动录制波形播放，必须在stopRecord后或者达到最长录音时间后调用
-     */
-    public void startPlay() {
-        if(compressLinkedList != null) {
-            releaseThread();
-            mode = MODE_PLAYING;
-            isPlayPause = false;
-            current_position = 1;
-            playSleepTime = duration / compressLinkedList.size();  //根据语音时长计算单个波纹间隔
-            voicePlayDrawTask = new VoicePlayDrawTask();  //语音播放画图线程初始化
-            timer.schedule(voicePlayDrawTask, 200);  //延迟200ms执行
-        }
-    }
-
-    /**
-     * 暂停播放
-     */
-    public void pausePlay() {
-        if (isPlayPause)
-            isPlayPause = false;
-        else
-            isPlayPause = true;
     }
 
     /**
@@ -423,20 +458,5 @@ public class VoiceWaveView extends View {
             }
         }
     }
-
-    private class WaveBean {
-        private final float HEIGHT_HALF = getHeight()/2;
-        private final float WIDTH = getWidth();
-        private float y_offset;
-
-        public WaveBean(float y_offset) {
-            this.y_offset = y_offset;
-        }
-
-        public float getYoffset() {
-            return y_offset;
-        }
-    }
-
 }
 

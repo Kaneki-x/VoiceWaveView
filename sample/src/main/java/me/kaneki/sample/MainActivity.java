@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import me.kaneki.voicewaveview.VoiceWaveView;
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         while (true) {
                             try {
-                                wvw_main.setWaveHeight(random.nextInt(100) + 1);
+                                wvw_main.setWaveHeightPercent(random.nextInt(100) + 1);
                                 Thread.sleep(100);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
@@ -65,14 +66,14 @@ public class MainActivity extends AppCompatActivity {
         btn_main3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wvw_main.startPlay();
+                wvw_main.startPlay(null);
             }
         });
 
         btn_main4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wvw_main.pausePlay();
+                wvw_main.pauseOrResumePlay();
             }
         });
 
