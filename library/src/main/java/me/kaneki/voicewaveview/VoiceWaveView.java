@@ -64,7 +64,7 @@ public class VoiceWaveView extends View {
     //最大录音时间
     private int maxDuration;
     //背景图
-    private Drawable backgrounDrawable;
+    private Drawable backgroundDrawable;
 
     private Context context;
     //波形录制线程
@@ -112,7 +112,7 @@ public class VoiceWaveView extends View {
         dividerWidth = ta.getDimension(R.styleable.VoiceWaveView_duration, 8.0f);
         refreshRatio = ta.getInt(R.styleable.VoiceWaveView_refreshRatio, 50);
         maxDuration = ta.getInt(R.styleable.VoiceWaveView_duration, 60);
-        backgrounDrawable = getBackground();
+        backgroundDrawable = getBackground();
 
         ta.recycle();
     }
@@ -312,7 +312,7 @@ public class VoiceWaveView extends View {
      */
     private void drawBackground(Canvas canvas) {
         if(canvas != null) {
-            if (backgrounDrawable == null)
+            if (backgroundDrawable == null)
                 canvas.drawColor(backgroundColor);
         }
     }
