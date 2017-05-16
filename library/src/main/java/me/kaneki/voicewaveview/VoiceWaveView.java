@@ -200,6 +200,7 @@ public class VoiceWaveView extends View {
      */
     public void stopRecord() {
         isRecordPause = true;
+        linkedList.clear();
     }
 
     /**
@@ -245,7 +246,7 @@ public class VoiceWaveView extends View {
      * 获取当前录制的语音波形列表
      * @return
      */
-    public ArrayList<WaveBean> getCurrentWaveData() {
+    public ArrayList<WaveBean> getLastWaveData() {
         if (compressLinkedList != null && !compressLinkedList.isEmpty()) {
             return compressLinkedList;
         } else {
@@ -280,6 +281,8 @@ public class VoiceWaveView extends View {
      * @param waveBeanList
      */
     private void drawWave(Canvas canvas, List<WaveBean> waveBeanList) {
+        if (waveBeanList == null)
+            return;
         int i = waveBeanList.size();
         for (WaveBean bean : waveBeanList) {
             //从表头开始画
@@ -294,6 +297,8 @@ public class VoiceWaveView extends View {
      * @param current_position
      */
     private void drawPlayWave(Canvas canvas, int current_position) {
+        if (compressLinkedList == null)
+            return;
         int i = compressLinkedList.size();
         for (WaveBean bean : compressLinkedList) {
             //从表头开始画
@@ -432,7 +437,6 @@ public class VoiceWaveView extends View {
                     ex.printStackTrace();
                 }
             }
-            linkedList.clear();
         }
     }
 

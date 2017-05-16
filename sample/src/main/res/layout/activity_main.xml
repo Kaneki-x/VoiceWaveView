@@ -14,10 +14,12 @@
     <me.kaneki.voicewaveview.VoiceWaveView
         android:id="@+id/wvw_main"
         android:visibility="visible"
-        android:layout_width="200dp"
-        android:layout_height="55dp"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/msg_voice_panel_bg"/>
+        android:background="@drawable/msg_voice_panel_bg"
+        app:lineWidth="1.5dp"
+        app:dividerWidth="1dp"/>
 
     <Button
         android:id="@+id/btn_main"
