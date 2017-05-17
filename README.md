@@ -1,7 +1,7 @@
 # VoiceWaveView
 
 [![License](https://img.shields.io/badge/license-Apache%202-green.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Download](https://api.bintray.com/packages/echohaha/maven/VoiceWaveView/images/download.svg) ](https://bintray.com/echohaha/maven/VoiceWaveView/_latestVersion)
+[![Download](https://api.bintray.com/packages/echohaha/maven/library/images/download.svg) ](https://bintray.com/echohaha/maven/library/_latestVersion)
 
 **VoiceWaveView** - An Android library that provides a voice wave effect.
 
@@ -14,7 +14,7 @@
 
 **For a working implementation of this project see the `sample/` folder.**
 
-### Step 1
+### Dependency
 
 Include the library as local library project or add the dependency in your build.gradle.
 
@@ -24,7 +24,7 @@ dependencies {
 }
 ```
 
-### Step 2
+### Layout
 
 Include the VoiceWaveView widget in your layout. And you can customize it like this. this view doesn't support `wrap_content`, Its size must be determined or `match_parent`.  
    
@@ -44,10 +44,9 @@ Include the VoiceWaveView widget in your layout. And you can customize it like t
         app:inactiveLineColor="#99ffffff"/>         
 ```
 
-### Step 3
+### Java
 
 If you want to record or play the recorded data, you can write these code, etc in your Activity.
-
 
 ```java
     VoiceWaveView mVoiceWaveView = (VoiceWaveView) findViewById(R.id.voiceWaveView);
@@ -69,8 +68,6 @@ If you want to record or play the recorded data, you can write these code, etc i
 ```
 
 ## Customization
-
-Please feel free to :)
 
 |name|format|description|
 |:---:|:---:|:---:|
@@ -113,7 +110,7 @@ If you have any questions or want to make friends with me, please feel free to c
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
