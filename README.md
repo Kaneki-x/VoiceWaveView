@@ -7,8 +7,8 @@
 
 ## Sample
 
-<img src="http://chuantu.biz/t5/88/1494947367x2890174231.gif" alt="sample" title="sample" width="300" height="450" />
-<img src="http://chuantu.biz/t5/88/1494948148x2890174046.gif" alt="sample" title="sample" width="300" height="450" />
+<img src="http://i4.buimg.com/594670/436f0998cfeecbb6.gif" alt="sample" title="sample" width="300" height="450" />
+<img src="http://i4.buimg.com/594670/fa9c4f90b46a4810.gif" alt="sample" title="sample" width="300" height="450" />
 
 ## Usage
 
