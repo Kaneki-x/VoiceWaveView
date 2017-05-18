@@ -40,7 +40,7 @@ version = "0.0.3"
 
 // 定义两个链接，下面会用到。
 def siteUrl = 'https://github.com/echohaha/VoiceWaveView' // 项目主页。
-def gitUrl = 'git@github.com:echohaha/VoiceWaveView.git' // Git仓库的url。
+def gitUrl = 'git@github.com:echohaha/VoiceWaveView' // Git仓库的url。
 
 // 唯一包名，比如compile 'me.kaneki.voicewaveview:library:0.0.1'中的com.yanzhenjie就是这里配置的。
 group = "me.kaneki.voicewaveview"
