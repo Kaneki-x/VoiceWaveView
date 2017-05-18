@@ -20,7 +20,7 @@ Include the library as local library project or add the dependency in your build
 
 ```groovy
 dependencies {
-    compile 'me.kankei.voicewaveview:library:0.0.2'
+    compile 'me.kankei.voicewaveview:library:0.0.3'
 }
 ```
 
@@ -114,6 +114,8 @@ public class WaveData {
 **All attributes have their respective getters and setters to change them at runtime.**
 
 ## Change Log
+### 0.0.3（2017-05-19）
+- Removing personal configuration does not matter...
 
 ### 0.0.2（2017-05-19）
 - fix get last wave data not contains duration
