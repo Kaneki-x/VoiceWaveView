@@ -20,7 +20,7 @@ Include the library as local library project or add the dependency in your build
 
 ```groovy
 dependencies {
-    compile 'me.kankei.voicewaveview:library:0.0.1'
+    compile 'me.kankei.voicewaveview:library:0.0.2'
 }
 ```
 
