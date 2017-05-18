@@ -53,18 +53,48 @@ If you want to record or play the recorded data, you can write these code, etc i
     
     //begin record
     mVoiceWaveView.startRecord();
-    //set the record wave height percet (1-100), it can be used during other thread.
+    //set the record wave height percet (1-100), it can be used during other thread
     mVoiceWaveView.setWaveHeightPercent(random.nextInt(100) + 1);
     //stop record
     mVoiceWaveView.stopRecord();
-    //get the last record data, you can change the list to json string or other type to save it
-    ArrayList<WaveBean> list = mVoiceWaveView.getLastWaveData();
+    //get the last record data, you can change the waveData to json string or other type to save it
+    WaveData waveData = mVoiceWaveView.getLastWaveData();
     
-    //start play, if the list is null, it will play the last record data
-    mVoiceWaveView.starPlay(list);
+    //start play, if the waveData is null, it will play the last record data
+    mVoiceWaveView.starPlay(waveData);
     //pause the play or resume it
     mVoiceWaveView.pauseOrResumePlay();
     
+```
+`WaveData` contains last record wave list and  duration, you can serialize it for local storage.
+
+```java
+public class WaveData {
+        private ArrayList<WaveBean> waveList;
+        private long duration;
+
+        public WaveData(ArrayList<WaveBean> waveList, long duration) {
+            this.waveList = waveList;
+            this.duration = duration;
+        }
+
+        public ArrayList<WaveBean> getWaveList() {
+            return waveList;
+        }
+
+        public void setWaveList(ArrayList<WaveBean> waveList) {
+            this.waveList = waveList;
+        }
+
+        public long getDuration() {
+            return duration;
+        }
+
+        public void setDuration(long duration) {
+            this.duration = duration;
+        }
+    }
+
 ```
 
 ## Customization
@@ -84,6 +114,10 @@ If you want to record or play the recorded data, you can write these code, etc i
 **All attributes have their respective getters and setters to change them at runtime.**
 
 ## Change Log
+
+### 0.0.2（2017-05-19）
+- fix get last wave data not contains duration
+- optimized wave data compression algorithm
 
 ### 0.0.1（2017-05-17）
 - library first build

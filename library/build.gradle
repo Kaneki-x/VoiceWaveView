@@ -5,7 +5,7 @@ publish {
     userOrg = 'echohaha' //你的用户名
     groupId = 'me.kaneki.voicewaveview' //你的唯一的groupId，对应com.squareup.okhttp3:okhttp:3.4.1中的com.squareup.okhttp3
     artifactId = 'library' //你的library的名字，对应com.squareup.okhttp3:okhttp:3.4.1中的okhttp
-    publishVersion = '0.0.1' //版本号
+    publishVersion = '0.0.2' //版本号
     desc = 'a simple voice recording view with wave style'
     website = 'https://github.com/echohaha/VoiceWaveView.git' //建议填写github地址，不过不影响，这里做演示填的自己的网址
 
