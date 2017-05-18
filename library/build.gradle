@@ -68,7 +68,7 @@ install {
                     developer {
                         id 'echohaha' // 开发者的id。
                         name 'kaneki' // 开发者名字。
-                        email '549829925@qq.com' // 开发者邮箱。
+                        email 'chenjianbo2222@gmail.com' // 开发者邮箱。
                     }
                 }
 

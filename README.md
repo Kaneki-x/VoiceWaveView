@@ -135,7 +135,7 @@ Tell me if you're using my library in your application, I'll share it in this RE
 
 I work as Android Development Engineer at Meili-inc Group.
 
-If you have any questions or want to make friends with me, please feel free to contact me : [549829925#qq.com](mailto:imtangqi@qq.com "Welcome to contact me")
+If you have any questions or want to make friends with me, please feel free to contact me : [chenjianbo2222#gmail.com](mailto:chenjianbo2222@gmail.com)
 
 
 ## License
