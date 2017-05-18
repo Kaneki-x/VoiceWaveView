@@ -27,27 +27,27 @@ public class VoiceWaveView extends View {
     private float WIDTH;
 
     //录制计时
-    private long duration = 0;
+    private long duration;
     //播放线程等待间隔
-    private long playSleepTime = 0;
+    private long playSleepTime;
 
     //播放波形位置
     private int current_position = 1;
     //View能包含的最大波形个数
-    private int maxLines = 0;
+    private int maxLines;
     //当前模式
     private int mode = -1;
     //波形最大高度
     private float maxWaveHeight;
 
     //录制线程运行标记
-    private boolean record_flag = false;
+    private boolean record_flag;
     //播放线程标记
-    private boolean play_flag = false;
+    private boolean play_flag;
     //录制暂停标记
-    private boolean isRecordPause = false;
+    private boolean isRecordPause;
     //播放暂停标记
-    private boolean isPlayPause = false;
+    private boolean isPlayPause;
 
     //控件背景色
     private int backgroundColor;
@@ -218,11 +218,12 @@ public class VoiceWaveView extends View {
 
     /**
      * 启动录制波形播放，必须在stopRecord后或者达到最长录音时间后调用
-     * @param playList 准备播放的波形列表，传null则播放上次stopRecord后的列表
+     * @param waveData 准备播放的波形列表，传null则播放上次stopRecord后的列表
      */
-    public void startPlay(ArrayList<WaveBean> playList) {
-        if(playList != null) {
-            compressLinkedList = playList;
+    public void startPlay(WaveData waveData) {
+        if(waveData != null) {
+            compressLinkedList = waveData.getWaveList();
+            duration = waveData.getDuration();
         }
         if (compressLinkedList != null) {
             releaseThread();
@@ -246,11 +247,37 @@ public class VoiceWaveView extends View {
      * 获取当前录制的语音波形列表
      * @return
      */
-    public ArrayList<WaveBean> getLastWaveData() {
+    public WaveData getLastWaveData() {
         if (compressLinkedList != null && !compressLinkedList.isEmpty()) {
-            return compressLinkedList;
+            return new WaveData(compressLinkedList, duration);
         } else {
             return null;
+        }
+    }
+
+    public class WaveData {
+        private ArrayList<WaveBean> waveList;
+        private long duration;
+
+        public WaveData(ArrayList<WaveBean> waveList, long duration) {
+            this.waveList = waveList;
+            this.duration = duration;
+        }
+
+        public ArrayList<WaveBean> getWaveList() {
+            return waveList;
+        }
+
+        public void setWaveList(ArrayList<WaveBean> waveList) {
+            this.waveList = waveList;
+        }
+
+        public long getDuration() {
+            return duration;
+        }
+
+        public void setDuration(long duration) {
+            this.duration = duration;
         }
     }
 
@@ -327,36 +354,46 @@ public class VoiceWaveView extends View {
      * @return
      */
     private ArrayList<WaveBean> getCompressLinkedList() {
-        if(allLinkedList.size() == 0) {
-            int remain_size = maxLines - linkedList.size();
-            ArrayList<WaveBean> compressList = new ArrayList<>(maxLines);
-            if(remain_size >= linkedList.size()) {
-                int compress_ratio = remain_size / linkedList.size();
-                for(WaveBean waveBean : linkedList) {
-                    compressList.add(waveBean);
-                    for(int i = 0; i < compress_ratio; i++)
-                        compressList.add(new WaveBean(waveBean.getY_offset()));
+        ArrayList<WaveBean> compressList = new ArrayList<>(maxLines);
+        if(allLinkedList.size() < maxLines) {
+            int remain_size = maxLines - allLinkedList.size();
+            if(remain_size >= allLinkedList.size()) {
+                int compress_ratio = (int) Math.ceil((double) remain_size / (double)allLinkedList.size());
+                for(WaveBean waveBean : allLinkedList) {
+                    if (compressList.size() < maxLines)
+                        compressList.add(waveBean);
+                    for(int i = 0; i < compress_ratio; i++) {
+                        if (compressList.size() < maxLines) {
+                            compressList.add(new WaveBean(waveBean.getY_offset()));
+                        }
+                    }
                 }
             } else {
-                int compress_ratio = linkedList.size() / remain_size;
+                int compress_ratio = allLinkedList.size() / remain_size;
                 int current_position = 1;
-                for(WaveBean waveBean : linkedList) {
-                    compressList.add(waveBean);
-                    if(current_position % compress_ratio == 0)
-                        compressList.add(new WaveBean(waveBean.getY_offset()));
+                for(WaveBean waveBean : allLinkedList) {
+                    if (compressList.size() < maxLines) {
+                        compressList.add(waveBean);
+                    }
+                    if(current_position % compress_ratio == 0) {
+                        if (compressList.size() < maxLines) {
+                            compressList.add(new WaveBean(waveBean.getY_offset()));
+                        }
+                    }
                     current_position++;
                 }
             }
             return compressList;
         } else {
-            ArrayList<WaveBean> compressList = new ArrayList<>(maxLines);
             int compress_ratio = allLinkedList.size() / maxLines;
             float average = 0;
             for (int i = 1; i <= allLinkedList.size(); i++) {
                 if(i % compress_ratio == 0) {
                     if(compressList.size() < maxLines) {
                         average = average == 0 ? allLinkedList.get(i - 1).getY_offset() : average;
-                        compressList.add(new WaveBean(average / compress_ratio));
+                        if (compressList.size() < maxLines) {
+                            compressList.add(new WaveBean(average / compress_ratio));
+                        }
                         average = 0;
                     } else {
                         return compressList;
