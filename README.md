@@ -115,14 +115,14 @@ public class WaveData {
 
 ## Change Log
 ### 0.0.3（2017-05-19）
-- Removing personal configuration does not matter...
+- removing personal configuration does not matter...
 
 ### 0.0.2（2017-05-19）
-- fix get last wave data not contains duration
-- optimized wave data compression algorithm
+- fix get last wave data not contains duration.
+- optimized wave data compression algorithm.
 
 ### 0.0.1（2017-05-17）
-- library first build
+- library first build.
 
 
 ## Community
