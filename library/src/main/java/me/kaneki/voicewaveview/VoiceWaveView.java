@@ -15,10 +15,21 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import me.kaneki.voicewaveview.entity.WaveBean;
+import me.kaneki.voicewaveview.entity.WaveData;
+
 /**
  * @author kaneki
  */
 public class VoiceWaveView extends View {
+
+    private final static float DEFAULT_WAVE_WIDTH = 3.0f;
+    private final static float DEFAULT_WAVE_DIVIDER_WIDTH = 8.0f;
+    private final static int DEFAULT_REFRESH_RATIO = 50;
+    private final static int DEFAULT_MAX_DURATION = 60;
+    private final static String DEFAULT_COLOR_BACKGROUND = "#7f7f7f";
+    private final static String DEFAULT_COLOR_ACTIVE_WAVE = "#ffffff";
+    private final static String DEFAULT_COLOR_INACTIVE_WAVE = "#99ffffff";
 
     private final static int MODE_RECORDING = 0;
     private final static int MODE_PLAYING = 1;
@@ -105,13 +116,13 @@ public class VoiceWaveView extends View {
     private void initAttrs(AttributeSet attrs) {
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.VoiceWaveView);
 
-        backgroundColor = ta.getColor(R.styleable.VoiceWaveView_backgroundColor, Color.parseColor("#7f7f7f"));
-        activeLineColor = ta.getColor(R.styleable.VoiceWaveView_activeLineColor, Color.parseColor("#ffffff"));
-        inactiveLineColor = ta.getColor(R.styleable.VoiceWaveView_inactiveLineColor, Color.parseColor("#99ffffff"));
-        lineWidth = ta.getDimension(R.styleable.VoiceWaveView_lineWidth, 3.0f);
-        dividerWidth = ta.getDimension(R.styleable.VoiceWaveView_duration, 8.0f);
-        refreshRatio = ta.getInt(R.styleable.VoiceWaveView_refreshRatio, 50);
-        maxDuration = ta.getInt(R.styleable.VoiceWaveView_duration, 60);
+        backgroundColor = ta.getColor(R.styleable.VoiceWaveView_backgroundColor, Color.parseColor(DEFAULT_COLOR_BACKGROUND));
+        activeLineColor = ta.getColor(R.styleable.VoiceWaveView_activeLineColor, Color.parseColor(DEFAULT_COLOR_ACTIVE_WAVE));
+        inactiveLineColor = ta.getColor(R.styleable.VoiceWaveView_inactiveLineColor, Color.parseColor(DEFAULT_COLOR_INACTIVE_WAVE));
+        lineWidth = ta.getDimension(R.styleable.VoiceWaveView_lineWidth, DEFAULT_WAVE_WIDTH);
+        dividerWidth = ta.getDimension(R.styleable.VoiceWaveView_duration, DEFAULT_WAVE_DIVIDER_WIDTH);
+        refreshRatio = ta.getInt(R.styleable.VoiceWaveView_refreshRatio, DEFAULT_REFRESH_RATIO);
+        maxDuration = ta.getInt(R.styleable.VoiceWaveView_duration, DEFAULT_MAX_DURATION);
         backgroundDrawable = getBackground();
 
         ta.recycle();
@@ -209,7 +220,9 @@ public class VoiceWaveView extends View {
      */
     public void setWaveHeightPercent(int percent) {
         if (!isRecordPause) {
-            if (percent >= 100 || percent <= 0)
+            if (percent >= 100 )
+                percent = 100;
+            else if (percent < 1)
                 percent = 1;
 
             waveHeight = maxWaveHeight * percent / 100;
@@ -221,10 +234,8 @@ public class VoiceWaveView extends View {
      * @param waveData 准备播放的波形列表，传null则播放上次stopRecord后的列表
      */
     public void startPlay(WaveData waveData) {
-        if(waveData != null) {
-            compressLinkedList = waveData.getWaveList();
-            duration = waveData.getDuration();
-        }
+        decodeWaveData(waveData);
+
         if (compressLinkedList != null) {
             releaseThread();
             mode = MODE_PLAYING;
@@ -255,46 +266,28 @@ public class VoiceWaveView extends View {
         }
     }
 
-    public class WaveData {
-        private ArrayList<WaveBean> waveList;
-        private long duration;
+    /**
+     * 根据保存波形数据，画出波形
+     * @param waveData
+     */
+    public void drawWaveData(WaveData waveData) {
+        decodeWaveData(waveData);
 
-        public WaveData(ArrayList<WaveBean> waveList, long duration) {
-            this.waveList = waveList;
-            this.duration = duration;
-        }
-
-        public ArrayList<WaveBean> getWaveList() {
-            return waveList;
-        }
-
-        public void setWaveList(ArrayList<WaveBean> waveList) {
-            this.waveList = waveList;
-        }
-
-        public long getDuration() {
-            return duration;
-        }
-
-        public void setDuration(long duration) {
-            this.duration = duration;
+        if (compressLinkedList != null) {
+            mode = MODE_RECORDING;
+            isRecordPause = true;
+            invalidate();
         }
     }
-
-    public class WaveBean {
-        private float y_offset;
-
-        private WaveBean(float y_offset) {
-            this.y_offset = y_offset;
-        }
-
-        public float getY_offset() {
-            return y_offset;
-        }
-    }
-
 
     /********************* 内部方法 *********************/
+
+    private void decodeWaveData(WaveData waveData) {
+        if (waveData != null) {
+            compressLinkedList = waveData.getWaveList();
+            duration = waveData.getDuration();
+        }
+    }
 
     private void initDefaultWaveList() {
         for (int i = 0; i < maxLines; i++) {
