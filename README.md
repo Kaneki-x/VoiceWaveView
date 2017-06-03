@@ -20,7 +20,7 @@ Include the library as local library project or add the dependency in your build
 
 ```groovy
 dependencies {
-    compile 'me.kankei.voicewaveview:library:0.0.3'
+    compile 'me.kankei.voicewaveview:library:0.0.4'
 }
 ```
 
@@ -59,6 +59,8 @@ If you want to record or play the recorded data, you can write these code, etc i
     mVoiceWaveView.stopRecord();
     //get the last record data, you can change the waveData to json string or other type to save it
     WaveData waveData = mVoiceWaveView.getLastWaveData();
+    //draw the give wave data as view 
+    mVoiceWaveView.drawWaveData(waveData);
     
     //start play, if the waveData is null, it will play the last record data
     mVoiceWaveView.starPlay(waveData);
@@ -114,6 +116,11 @@ public class WaveData {
 **All attributes have their respective getters and setters to change them at runtime.**
 
 ## Change Log
+### 0.0.4（2017-06-03）
+- add new public interface `drawWaveData`.
+- extract the inner class `WaveData` and `WaveBean` as public entity.
+- change the structure of internal code `VoiceWaveView`
+
 ### 0.0.3（2017-05-19）
 - removing personal configuration does not matter...
 
