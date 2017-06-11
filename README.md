@@ -27,7 +27,7 @@ dependencies {
 ### Layout
 
 Include the VoiceWaveView widget in your layout. And you can customize it like this. this view doesn't support `wrap_content`, Its size must be determined or `match_parent`.  
-   
+
 ```xml
 <me.kaneki.voicewaveview.VoiceWaveView
         android:id="@+id/voiceWaveView"
@@ -50,23 +50,23 @@ If you want to record or play the recorded data, you can write these code, etc i
 
 ```java
     VoiceWaveView mVoiceWaveView = (VoiceWaveView) findViewById(R.id.voiceWaveView);
-    
+
     //begin record
     mVoiceWaveView.startRecord();
-    //set the record wave height percet (1-100), it can be used during other thread
+    //set the record wave height percent (1-100), it can be used during other thread
     mVoiceWaveView.setWaveHeightPercent(random.nextInt(100) + 1);
     //stop record
     mVoiceWaveView.stopRecord();
     //get the last record data, you can change the waveData to json string or other type to save it
     WaveData waveData = mVoiceWaveView.getLastWaveData();
-    //draw the give wave data as view 
+    //draw the give wave data as view
     mVoiceWaveView.drawWaveData(waveData);
-    
+
     //start play, if the waveData is null, it will play the last record data
     mVoiceWaveView.starPlay(waveData);
     //pause the play or resume it
     mVoiceWaveView.pauseOrResumePlay();
-    
+
 ```
 `WaveData` contains last record wave list and  duration, you can serialize it for local storage.
 
@@ -110,7 +110,7 @@ public class WaveData {
 | dividerWidth | dimension | divider width between two wave line, default is `1dp`
 | duration | integer | max record time , default is `30s`
 | refreshRatio | integer | view refresh ratio, default is `50ms`
- 
+
 
 
 **All attributes have their respective getters and setters to change them at runtime.**
